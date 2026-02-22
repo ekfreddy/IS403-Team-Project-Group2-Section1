@@ -1,20 +1,75 @@
 # IS403-Team-Project-Group2-Section1
-Database Setup
 
-To get the Homey database running on your local machine, follow these steps:
+## Prerequisites
 
-Open your terminal and ensure PostgreSQL is running.
+Install the following before running the backend locally:
 
-Create the database:
+- Node.js 20+ and npm: https://nodejs.org/en/download
+- PostgreSQL 14+ (includes `psql` and `createdb`): https://www.postgresql.org/download/
 
-Bash
+Verify installations:
+
+```bash
+node --version
+npm --version
+psql --version
+createdb --version
+```
+
+## Installation and Setup
+
+### 1) Create and populate the database
+
+```bash
 createdb homey_db
-Run the Schema: Navigate to the /db folder and run:
+psql -d homey_db -f db/schema.sql
+psql -d homey_db -f db/seed.sql
+```
 
-Bash
-psql -d homey_db -f schema.sql
-Seed the Data: Populate the tables with the Figma-aligned sample data:
+Verify table creation:
 
-Bash
-psql -d homey_db -f seed.sql
-Verify: Run psql -d homey_db and type \dt to see all 5 tables (users, journey_steps, property_priorities, neighborhoods, and resources).
+```bash
+psql -d homey_db -c "\dt"
+```
+
+You should see these tables: `users`, `journey_steps`, `property_priorities`, `neighborhoods`, and `resources`.
+
+### 2) Configure backend environment variables
+
+From the `backend` folder, copy `.env.example` to `.env` and update values if needed:
+
+```bash
+cd backend
+copy .env.example .env
+```
+
+## Running the Application
+
+### Start backend API (Team Member 2)
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+Backend runs at: `http://localhost:3001`
+
+Health check:
+
+```bash
+GET http://localhost:3001/api/health
+```
+
+Working button endpoint (used by frontend to persist progress):
+
+```bash
+PUT http://localhost:3001/api/journey-steps/:stepId/complete
+Content-Type: application/json
+
+{
+	"isCompleted": true
+}
+```
+
+The endpoint updates `journey_steps.is_completed` in PostgreSQL and returns the updated row so the frontend can immediately update the UI.
